@@ -1,6 +1,6 @@
 # 深色 PDF 阅读器 · Dark PDF
 
-一个只有 **65 KB** 的 Edge / Chrome 扩展：打开 PDF 时把文档反色成深色，**完整保留浏览器原生的 PDF 工具栏**——页码、缩放、旋转、搜索、打印、绘图、Copilot 全都在。
+一个只有 **40 KB** 的 Edge / Chrome 扩展：打开 PDF 时把文档反色成深色，**完整保留浏览器原生的 PDF 工具栏**——页码、缩放、旋转、搜索、打印、绘图、Copilot 全都在。
 
 不替换阅读器，不打包 pdf.js，不联网。
 
@@ -185,7 +185,7 @@ left   = (W - 滚动条 - pageW) / 2
 
 ## English
 
-A 65 KB Chrome/Edge extension (Manifest V3) that inverts PDF pages into dark mode **while keeping the browser's native PDF toolbar fully intact** — page navigation, zoom, rotate, search, print, draw, Copilot, all of it.
+A 40 KB Chrome/Edge extension (Manifest V3) that inverts PDF pages into dark mode **while keeping the browser's native PDF toolbar fully intact** — page navigation, zoom, rotate, search, print, draw, Copilot, all of it.
 
 Instead of replacing the viewer, it injects a `pointer-events: none` overlay just below the toolbar and uses `backdrop-filter: invert() hue-rotate(180deg)` on whatever sits behind it. The toolbar lives above the overlay, so it is never touched.
 
