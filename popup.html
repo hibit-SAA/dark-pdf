@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>深色 PDF 阅读器</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="head">
+    <span class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h4"/>
+      </svg>
+    </span>
+    <div>
+      <h1>深色 PDF 阅读器</h1>
+      <p class="sub">原生工具栏 · 文档反色</p>
+    </div>
+  </header>
+
+  <div class="row">
+    <div class="row-text">
+      <span class="label">启用深色反色</span>
+      <span class="hint">关闭后 PDF 恢复原始白色</span>
+    </div>
+    <label class="switch">
+      <input id="enabled" type="checkbox" checked>
+      <span class="track"><span class="thumb"></span></span>
+    </label>
+  </div>
+
+  <div class="row column">
+    <div class="row-text spread">
+      <span class="label">反色强度</span>
+      <span id="strengthVal" class="value">92%</span>
+    </div>
+    <input id="strength" class="range" type="range" min="50" max="100" step="1" value="92">
+    <p class="hint">越高越黑，100% 为完全反色</p>
+  </div>
+
+  <div class="row">
+    <div class="row-text">
+      <span class="label">页面外空白自动压深</span>
+      <span class="hint">量出页面边界后把两侧空白涂成深灰</span>
+    </div>
+    <label class="switch">
+      <input id="autoEdge" type="checkbox" checked>
+      <span class="track"><span class="thumb"></span></span>
+    </label>
+  </div>
+
+  <button id="reapply" class="primary">重新应用到当前页</button>
+  <p id="status" class="status"></p>
+
+  <footer class="foot">
+    顶部工具栏是 Edge 原生的，按钮与功能全部保留，颜色跟随浏览器主题（深色模式下即为深色）。
+    「自动压深」会抓一帧当前画面量出页面左右边界，只在空白处涂上深灰，正文对比度完全不受影响；
+    缩放、改变窗口大小后由几何模型直接算出新位置，不再抓图，所以不会闪烁。
+  </footer>
+</div>
+<script src="popup.js"></script>
+</body>
+</html>
