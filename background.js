@@ -530,6 +530,19 @@ async function applyEverywhere() {
       await applyToTab(tab.id, tab.url);
     }
   }
+
+  // 从「关」切回「开」时，之前的标定数据已经被清掉了，这里补量一次，
+  // 否则页面外空白会一直是反色后的浅灰（尤其是缩小状态下重新打开）。
+  const settings = await getSettings();
+  if (!settings.enabled || !settings.autoEdge) return;
+  const active = tabs.find(function (t) {
+    return t.active;
+  });
+  if (!active || !active.id) return;
+  const url = active.url || '';
+  if (!SCRIPTABLE.test(url)) return;
+  const geom = await getGeomFor(active.id, url);
+  if (!geom || !geom.k) refreshGeometry(active.id, url);
 }
 
 /* ------------------------------------------------------------------ */

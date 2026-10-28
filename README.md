@@ -4,7 +4,27 @@
 
 不替换阅读器，不打包 pdf.js，不联网。
 
-![深色模式下的 PDF](docs/screenshot-dark.png)
+---
+
+## 效果对比
+
+同一份文档（[`docs/demo.pdf`](docs/demo.pdf)）、同一个窗口，只差扩展开关。
+
+**100% 缩放**
+
+| 关闭扩展 | 开启扩展 |
+|:---:|:---:|
+| ![关闭扩展，100%](docs/compare-off.png) | ![开启扩展，100%](docs/screenshot-dark.png) |
+| 白纸 + 原生工具栏，长时间阅读刺眼 | 纸面反色成 `#141414`，工具栏原样保留 |
+
+**缩小到 62%——页面外空白露出来的时候**
+
+| 关闭扩展 | 开启扩展 |
+|:---:|:---:|
+| ![关闭扩展，62%](docs/compare-off-zoom.png) | ![开启扩展，62%](docs/screenshot-zoomout.png) |
+| 浏览器自带的深灰桌面 + 白纸 | 纸面变深，桌面仍保持深灰 `#33373d`，没有变成浅灰 |
+
+反色会把浏览器自带的深灰桌面一起翻成浅灰，所以「涂桌面」是单独做的一步：先量出页面矩形，只给矩形外面涂色，正文一个像素都不动。
 
 ---
 
@@ -25,7 +45,7 @@
 - **彩色不跑偏**：`hue-rotate(180deg)` 把反色后的色相转回来，插图不会变负片
 - **零网络**：不加载任何远程资源，截图只在扩展进程内解码，用完即弃，不落盘、不外传
 
-| 缩小到 42% | 设置面板 |
+| 缩小到 62% | 设置面板 |
 | --- | --- |
 | ![缩小](docs/screenshot-zoomout.png) | ![设置](docs/screenshot-popup.png) |
 
@@ -131,6 +151,23 @@ left   = (W - 滚动条 - pageW) / 2
 ├─ icons/            16 / 32 / 48 / 128 图标
 └─ docs/             截图，以及截图用的演示文档 demo.pdf
 ```
+
+---
+
+## 版本历史
+
+完整说明见 [Releases](https://github.com/hibit-SAA/dark-pdf/releases) 与 [CHANGELOG](CHANGELOG.md)。
+
+| 版本 | 主要变化 | 安装包 |
+| --- | --- | --- |
+| **v2.3.1** | 修：先关掉扩展、缩小、再打开时，页面外空白停在反色后的浅灰 | [下载](https://github.com/hibit-SAA/dark-pdf/releases/tag/v2.3.1) |
+| **v2.3** | 桌面改深灰 `#33373d`；缩放改用几何模型，不再闪烁 | [下载](https://github.com/hibit-SAA/dark-pdf/releases/tag/v2.3) |
+| **v2.2** | 缩放 / 改窗口后重新量边界；页面铺满时自动撤掉遮罩 | 未留档 |
+| **v2.1** | 页面外空白改为「先量后涂」，取代压曲线方案 | 未留档 |
+| **v2.0** | 重写：保留原生工具栏，用 `backdrop-filter` 遮罩反色 | [下载](https://github.com/hibit-SAA/dark-pdf/releases/tag/v2.0) |
+| **v1.0** | 初版：自带 pdf.js 阅读器，整页深色，但没有原生工具栏 | [下载](https://github.com/hibit-SAA/dark-pdf/releases/tag/v1.0) |
+
+> v2.1 / v2.2 是同一晚的两个中间迭代，代码被就地覆盖、没有留档，只有变更说明。
 
 ---
 

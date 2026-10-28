@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "深色 PDF 阅读器 · Dark PDF（原生工具栏版）",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "保留 Edge 原生 PDF 工具栏，只把文档画面反色成深色，页面外空白自动压成深灰。",
   "minimum_chrome_version": "102",
   "icons": {
