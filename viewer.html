@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>深色 PDF</title>
+<link rel="stylesheet" href="viewer.css">
+</head>
+<body class="invert">
+<div class="app">
+  <header class="bar">
+    <div class="bar-left">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h4"/>
+        </svg>
+      </span>
+      <span id="filename" class="filename" title="">正在加载…</span>
+    </div>
+
+    <div class="bar-center">
+      <button id="prev" class="icon-btn" title="上一页 (←)" aria-label="上一页">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <div class="pager">
+        <input id="pageInput" type="text" inputmode="numeric" value="1" aria-label="页码">
+        <span class="slash">/</span>
+        <span id="pageCount" class="total">–</span>
+      </div>
+      <button id="next" class="icon-btn" title="下一页 (→)" aria-label="下一页">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <div class="bar-right">
+      <button id="zoomOut" class="icon-btn" title="缩小 (-)" aria-label="缩小">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+      </button>
+      <button id="zoomLabel" class="text-btn" title="恢复适合宽度">100%</button>
+      <button id="zoomIn" class="icon-btn" title="放大 (+)" aria-label="放大">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <button id="fitBtn" class="icon-btn" title="适合宽度 (0)" aria-label="适合宽度">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4"/></svg>
+      </button>
+
+      <span class="sep"></span>
+
+      <button id="invertBtn" class="icon-btn toggle active" title="反色开关 (I)" aria-label="反色开关">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none"/></svg>
+      </button>
+      <button id="downloadBtn" class="icon-btn" title="下载原文件" aria-label="下载原文件">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M4 19h16"/></svg>
+      </button>
+      <button id="nativeBtn" class="icon-btn" title="用浏览器原生阅读器打开" aria-label="用浏览器原生阅读器打开">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-8 8"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="viewer">
+    <div id="pages"></div>
+  </main>
+
+  <div id="overlay" class="overlay">
+    <div class="card">
+      <div class="spinner" id="spinner"></div>
+      <h2 id="overlayTitle">正在载入 PDF…</h2>
+      <p id="overlayText" class="muted">首次打开较大的文件需要几秒</p>
+      <div class="progress"><div id="overlayBar" class="progress-bar"></div></div>
+      <div id="overlayActions" class="actions"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+</div>
+
+<script src="vendor/pdf.min.js"></script>
+<script src="viewer.js"></script>
+</body>
+</html>
