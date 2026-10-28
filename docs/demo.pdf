@@ -1,0 +1,118 @@
+%PDF-1.4
+%����
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 7 0 R /F2 8 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 2978 >>
+stream
+0.900 0.920 0.960 rg 0 752 595 90 re f
+0.090 0.150 0.280 rg 0 752 595 3 re f
+0.090 0.150 0.280 rg BT /F2 26.0 Tf 1 0 0 1 48 800 Tm (Dark PDF) Tj ET
+0.420 0.440 0.480 rg BT /F1 10.0 Tf 1 0 0 1 48 776 Tm (Native toolbar  ·  inverted document  ·  zero network) Tj ET
+0.100 0.110 0.130 rg BT /F2 13.0 Tf 1 0 0 1 48 706 Tm (1   Overview) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 48 682 Tm (Most dark-mode PDF extensions replace the viewer with their own renderer,) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 48 666 Tm (and the browser's toolbar disappears along with it. This one goes the other) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 48 650 Tm (way: it inverts the document inside the native PDF plugin page, so every) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 48 634 Tm (button - page navigation, zoom, rotate, search, print, draw - keeps working.) Tj ET
+0.100 0.110 0.130 rg BT /F2 13.0 Tf 1 0 0 1 48 596 Tm (2   How it works) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 60 572 Tm (•  A pointer-events:none overlay sits just below the toolbar.) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 60 556 Tm (•  backdrop-filter: invert\(\) hue-rotate\(180deg\) flips what is behind it.) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 60 540 Tm (•  The toolbar lives above the overlay, so it is never touched.) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 60 524 Tm (•  Gutters are measured once, then projected for any zoom level.) Tj ET
+0.100 0.110 0.130 rg BT /F2 13.0 Tf 1 0 0 1 48 486 Tm (3   Colour fidelity) Tj ET
+0.420 0.440 0.480 rg BT /F1 10.5 Tf 1 0 0 1 48 468 Tm (hue-rotate\(180deg\) puts the hues back, so charts keep their meaning.) Tj ET
+0.720 0.740 0.780 RG 0.8 w 40 250 m 525 250 l S
+0.820 0.250 0.240 rg 56 250 54 62 re f
+0.420 0.440 0.480 rg BT /F2 9.0 Tf 1 0 0 1 72 320 Tm (62) Tj ET
+0.420 0.440 0.480 rg BT /F1 8.5 Tf 1 0 0 1 70 234 Tm (Q1) Tj ET
+0.920 0.580 0.180 rg 134 250 54 96 re f
+0.420 0.440 0.480 rg BT /F2 9.0 Tf 1 0 0 1 150 354 Tm (96) Tj ET
+0.420 0.440 0.480 rg BT /F1 8.5 Tf 1 0 0 1 148 234 Tm (Q2) Tj ET
+0.200 0.620 0.420 rg 212 250 54 124 re f
+0.420 0.440 0.480 rg BT /F2 9.0 Tf 1 0 0 1 228 382 Tm (124) Tj ET
+0.420 0.440 0.480 rg BT /F1 8.5 Tf 1 0 0 1 226 234 Tm (Q3) Tj ET
+0.180 0.450 0.780 rg 290 250 54 82 re f
+0.420 0.440 0.480 rg BT /F2 9.0 Tf 1 0 0 1 306 340 Tm (82) Tj ET
+0.420 0.440 0.480 rg BT /F1 8.5 Tf 1 0 0 1 304 234 Tm (Q4) Tj ET
+0.520 0.300 0.720 rg 368 250 54 148 re f
+0.420 0.440 0.480 rg BT /F2 9.0 Tf 1 0 0 1 384 406 Tm (148) Tj ET
+0.420 0.440 0.480 rg BT /F1 8.5 Tf 1 0 0 1 382 234 Tm (Q5) Tj ET
+0.550 0.570 0.600 rg 446 250 54 110 re f
+0.420 0.440 0.480 rg BT /F2 9.0 Tf 1 0 0 1 462 368 Tm (110) Tj ET
+0.420 0.440 0.480 rg BT /F1 8.5 Tf 1 0 0 1 460 234 Tm (Q6) Tj ET
+0.780 0.780 0.780 RG 0.6 w 40 74 m 525 74 l S
+0.420 0.440 0.480 rg BT /F1 8.5 Tf 1 0 0 1 40 56 Tm (Dark PDF  ·  demo document) Tj ET
+0.420 0.440 0.480 rg BT /F1 8.5 Tf 1 0 0 1 487 56 Tm (1 / 2) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 7 0 R /F2 8 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 2801 >>
+stream
+0.900 0.920 0.960 rg 0 752 595 90 re f
+0.090 0.150 0.280 rg 0 752 595 3 re f
+0.090 0.150 0.280 rg BT /F2 22.0 Tf 1 0 0 1 48 800 Tm (Settings & notes) Tj ET
+0.420 0.440 0.480 rg BT /F1 10.0 Tf 1 0 0 1 48 776 Tm (Everything is local  ·  nothing leaves the browser) Tj ET
+0.100 0.110 0.130 rg BT /F2 13.0 Tf 1 0 0 1 48 706 Tm (4   Settings) Tj ET
+0.780 0.780 0.780 RG 0.8 w 40 676 m 525 676 l S
+0.100 0.110 0.130 rg BT /F2 10.5 Tf 1 0 0 1 48 660 Tm (Dark inversion) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 250 660 Tm (On) Tj ET
+0.420 0.440 0.480 rg BT /F1 9.5 Tf 1 0 0 1 360 660 Tm (master switch) Tj ET
+0.880 0.880 0.900 RG 0.4 w 40 646 m 525 646 l S
+0.100 0.110 0.130 rg BT /F2 10.5 Tf 1 0 0 1 48 636 Tm (Inversion strength) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 250 636 Tm (92%) Tj ET
+0.420 0.440 0.480 rg BT /F1 9.5 Tf 1 0 0 1 360 636 Tm (lower keeps photos less negative) Tj ET
+0.880 0.880 0.900 RG 0.4 w 40 622 m 525 622 l S
+0.100 0.110 0.130 rg BT /F2 10.5 Tf 1 0 0 1 48 612 Tm (Auto-dim gutters) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 250 612 Tm (On) Tj ET
+0.420 0.440 0.480 rg BT /F1 9.5 Tf 1 0 0 1 360 612 Tm (measured once, projected on zoom) Tj ET
+0.880 0.880 0.900 RG 0.4 w 40 598 m 525 598 l S
+0.100 0.110 0.130 rg BT /F2 13.0 Tf 1 0 0 1 48 570 Tm (5   Notes) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 48 546 Tm (The page gutter is the viewer's own backdrop, painted on the same layer) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 48 530 Tm (as the document, so inversion turns it light grey. The extension measures) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 48 514 Tm (the page rectangle once and paints only the margins, leaving the text) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 48 498 Tm (untouched - contrast is exactly what it was before inversion.) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 48 466 Tm (Zoom and window resizing are handled by a geometry model rather than a) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.5 Tf 1 0 0 1 48 450 Tm (second screenshot, which is why the margins never flicker.) Tj ET
+0.950 0.960 0.980 rg 48 330 479 96 re f
+0.200 0.450 0.850 rg 48 330 4 96 re f
+0.200 0.450 0.850 rg BT /F2 10.5 Tf 1 0 0 1 68 402 Tm (Tip) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.0 Tf 1 0 0 1 68 382 Tm (Open a local PDF with Ctrl+O. If nothing happens, enable) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.0 Tf 1 0 0 1 68 366 Tm (“Allow access to file URLs” on the extension's details page.) Tj ET
+0.100 0.110 0.130 rg BT /F1 10.0 Tf 1 0 0 1 68 350 Tm (The badge turns dark as soon as the document is inverted.) Tj ET
+0.780 0.780 0.780 RG 0.6 w 40 74 m 525 74 l S
+0.420 0.440 0.480 rg BT /F1 8.5 Tf 1 0 0 1 40 56 Tm (Dark PDF  ·  demo document) Tj ET
+0.420 0.440 0.480 rg BT /F1 8.5 Tf 1 0 0 1 487 56 Tm (2 / 2) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+8 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000127 00000 n 
+0000000263 00000 n 
+0000003293 00000 n 
+0000003429 00000 n 
+0000006282 00000 n 
+0000006352 00000 n 
+trailer
+<< /Size 9 /Root 1 0 R >>
+startxref
+6427
+%%EOF
