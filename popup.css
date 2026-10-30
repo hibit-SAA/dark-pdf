@@ -170,6 +170,26 @@ button.primary:disabled {
   filter: none;
 }
 
+button.ghost {
+  width: 100%;
+  height: 32px;
+  margin-top: 8px;
+  border-radius: 9px;
+  border: 1px solid #34383f;
+  background: #1b1d22;
+  color: #aeb6c2;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+button.ghost:hover { background: #22252b; color: #d6dde8; }
+button.ghost:disabled { opacity: 0.45; cursor: not-allowed; }
+button.ghost[data-on='1'] {
+  border-color: #3f5f96;
+  color: #cfe0ff;
+}
+
 .status {
   min-height: 15px;
   margin: 8px 0 0;

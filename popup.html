@@ -42,7 +42,7 @@
   <div class="row">
     <div class="row-text">
       <span class="label">页面外空白自动压深</span>
-      <span class="hint">量出页面边界后把两侧空白涂成深灰</span>
+      <span class="hint">量出页面边界后决定两侧要不要涂深灰</span>
     </div>
     <label class="switch">
       <input id="autoEdge" type="checkbox" checked>
@@ -51,12 +51,15 @@
   </div>
 
   <button id="reapply" class="primary">重新应用到当前页</button>
+  <button id="peek" class="ghost">临时显示原始页面（Alt+Shift+D）</button>
   <p id="status" class="status"></p>
 
   <footer class="foot">
     顶部工具栏是 Edge 原生的，按钮与功能全部保留，颜色跟随浏览器主题（深色模式下即为深色）。
-    「自动压深」会抓一帧当前画面量出页面左右边界，只在空白处涂上深灰，正文对比度完全不受影响；
-    缩放、改变窗口大小后由几何模型直接算出新位置，不再抓图，所以不会闪烁。
+    「自动压深」会抓一帧当前画面量出页面左右边界：浏览器是深色主题时两侧本来就是深灰，就不涂；
+    浅色主题下才在空白处涂上深灰。缩放、改变窗口大小后由几何模型直接算出新位置，不再抓图，所以不会闪烁。
+    Draw 面板、缩放菜单这些浮层是 Edge 自己画的，扩展看不见也挖不掉，压在页面上的那一段会被一起反色；
+    需要精确取色时按 Alt+Shift+D 临时还原。
   </footer>
 </div>
 <script src="popup.js"></script>

@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * 深色 PDF 阅读器 · 原生工具栏版（v2.3）
+ * 深色 PDF 阅读器 · 原生工具栏版（v2.4）
  *
  * 原理：
  *  浏览器把 PDF 渲染在一个「插件文档」里（<html><body><embed type="application/pdf">），
@@ -13,14 +13,22 @@
  *    · 工具栏在遮罩上方，完全不受影响，保持原生深色与全部功能
  *    · 文档画面被反色：白纸变深底、黑字变亮字
  *
- *  页面外的空白（gutter）和文档同层，会被一起反色成浅灰。处理办法是「量出来再涂灰」：
+ *  页面外的空白（gutter）和文档同层，会被一起反色。处理办法是「量出来再决定」：
  *  抓一帧视口 → 扫中间那一行 → 找出页面（与左右空白色差最大的连续段）→
- *  换算成视口百分比 → 在反色遮罩之上再盖一层只在两侧的深灰渐变。
+ *  顺便记下空白的亮度。浏览器是深色主题时空白本来就是深灰（#333），
+ *  遮罩就只盖页面本身、两侧什么都不涂；浅色主题时空白是浅灰（#f1f1f1），
+ *  才需要在两侧涂一层深灰渐变，否则反色后是一条亮边。
  *
  *  关键优化（v2.3）：缩放/改窗口不再重新抓图，所以完全不闪。
  *  实测 Edge 的 PDF 缩放就是 tab zoom，且页面宽度严格线性：pageW = k × zoom，
  *  其中 k 是该文档在 100% 时的宽度（CSS px），页面水平居中（右侧预留滚动条）。
  *  于是只要在加载时量一次 k 和滚动条宽度，之后所有缩放/改窗口都能直接算出来。
+ *
+ *  v2.4 修的两个「遮罩盖住原生界面」的问题：
+ *    · 滚动条：遮罩右边永远留出滚动条那一竖条（sbw），反色会把滚动条翻成浅色，
+ *      等于把它藏起来
+ *    · 工具栏浮层（Draw 面板、缩放菜单）：深色主题下遮罩只盖页面，不再盖到两侧空白，
+ *      浮层就不会被切掉半截
  */
 
 const DEFAULTS = { enabled: true, strength: 0.92, autoEdge: true };
@@ -32,6 +40,7 @@ const VEIL_ID = 'darkpdf-veil';
 const EDGE_ID = 'darkpdf-edge';
 const APPLIED_KEY = 'appliedTabs';
 const GEOM_KEY = 'gutterGeom';
+const PEEK_KEY = 'peekTabs';
 const SCRIPTABLE = /^(https?|file):/i;
 
 /* captureVisibleTab 有 2 次/秒 的限流，记一下上次调用时间 */
@@ -77,6 +86,8 @@ const getApplied = () => getSession(APPLIED_KEY, {});
 const setApplied = (map) => setSession(APPLIED_KEY, map);
 const getGeoms = () => getSession(GEOM_KEY, {});
 const setGeoms = (map) => setSession(GEOM_KEY, map);
+const getPeek = () => getSession(PEEK_KEY, {});
+const setPeek = (map) => setSession(PEEK_KEY, map);
 
 /* ------------------------------------------------------------------ */
 /* 样式                                                                */
@@ -87,21 +98,35 @@ function filterChain(settings) {
   return 'invert(' + strength + ') hue-rotate(180deg)';
 }
 
+/**
+ * 页面外空白要涂的深灰渐变。
+ *   · 深色主题（clip）下两侧空白本来就是深灰，什么都不用涂 —— 直接 none
+ *   · 浅色主题下空白是浅灰，必须涂，否则反色后变成一条亮边
+ * 用 px 而不是百分比做停靠点：这样给滚动条让出宽度时不会连带缩放整条渐变。
+ */
 function edgeGradient(settings, geom) {
   if (!settings.autoEdge || !geom) return 'none';
+  if (geom.clip) return 'none';
+  const w = geom.w || 0;
+  if (!w) return 'none';
+  const sbw = Math.max(0, geom.sbw || 0);
+  const limit = w - sbw; // 滚动条那一竖条不涂
   const l = clamp(geom.l, 0, 100);
   const r = clamp(geom.r, 0, 100);
   if (r - l < 10) return 'none'; // 量得不对，宁可不涂
-  if (l <= 0.5 && r >= 99.5) return 'none'; // 页面铺满，没有空白要涂
-  const f = 0.5; // 羽化宽度（视口百分比）
-  const stop = (v) => v.toFixed(2) + '%';
+  const leftPx = (l / 100) * w;
+  const rightPx = Math.min((r / 100) * w, limit);
+  if (leftPx <= 0.6 && rightPx >= limit - 0.6) return 'none'; // 页面铺满，没有空白要涂
+  if (rightPx - leftPx < 40) return 'none';
+  const f = Math.min(6, (rightPx - leftPx) / 4); // 羽化 px
+  const px = (v) => v.toFixed(1) + 'px';
   return (
     'linear-gradient(to right, ' +
-    EDGE_BG + ' 0%, ' +
-    EDGE_BG + ' ' + stop(l) + ', ' +
-    'rgba(51,55,61,0) ' + stop(l + f) + ', ' +
-    'rgba(51,55,61,0) ' + stop(r - f) + ', ' +
-    EDGE_BG + ' ' + stop(r) + ', ' +
+    EDGE_BG + ' 0px, ' +
+    EDGE_BG + ' ' + px(leftPx) + ', ' +
+    'rgba(51,55,61,0) ' + px(leftPx + f) + ', ' +
+    'rgba(51,55,61,0) ' + px(rightPx - f) + ', ' +
+    EDGE_BG + ' ' + px(rightPx) + ', ' +
     EDGE_BG + ' 100%)'
   );
 }
@@ -110,13 +135,33 @@ function buildCSS(settings, geom) {
   const chain = filterChain(settings);
   const grad = edgeGradient(settings, geom);
 
+  const w = (geom && geom.w) || 0;
+  const sbw = Math.max(0, (geom && geom.sbw) || 0);
+
+  // 遮罩的左右边界（px）。两条硬规则：
+  //   1. 右边永远留出滚动条那一竖条 —— 反色会把滚动条翻成浅色，等于把它藏起来
+  //   2. 深色主题下遮罩只盖住页面本身 —— 页面外空白本来就是深灰，
+  //      盖上去只会把 Edge 自己的浮层（Draw 面板、缩放菜单）一起反色
+  let veilLeft = 0;
+  let veilRight = sbw;
+  if (geom && geom.clip && w > 0) {
+    veilLeft = (clamp(geom.l, 0, 100) / 100) * w;
+    const pageRight = Math.min((clamp(geom.r, 0, 100) / 100) * w, w - sbw);
+    veilRight = Math.max(sbw, w - pageRight);
+    if (veilRight <= veilLeft) {
+      veilLeft = 0;
+      veilRight = sbw;
+    }
+  }
+  const box = (l, r) =>
+    'left: ' + l.toFixed(1) + 'px !important; right: ' + r.toFixed(1) + 'px !important;';
+
   return [
     'html, body { background: ' + DARK_BG + ' !important; }',
 
     '#' + VEIL_ID + ' {',
     '  position: fixed !important;',
-    '  left: 0 !important;',
-    '  right: 0 !important;',
+    '  ' + box(veilLeft, veilRight),
     '  bottom: 0 !important;',
     '  top: ' + BAR_HEIGHT + 'px !important;',
     '  margin: 0 !important;',
@@ -131,8 +176,7 @@ function buildCSS(settings, geom) {
 
     '#' + EDGE_ID + ' {',
     '  position: fixed !important;',
-    '  left: 0 !important;',
-    '  right: 0 !important;',
+    '  ' + box(0, sbw),
     '  bottom: 0 !important;',
     '  top: ' + BAR_HEIGHT + 'px !important;',
     '  margin: 0 !important;',
@@ -158,10 +202,14 @@ function projectGeom(geom, zoom, w) {
   if (!geom || !geom.k || !w || !zoom) return null;
   const pageW = geom.k * zoom;
   const sbw = typeof geom.sbw === 'number' ? geom.sbw : 0;
-  if (pageW >= w - sbw - 1) return { l: 0, r: 100 }; // 铺满整个宽度
+  const base = { w: w, sbw: sbw, clip: !!geom.clip };
+  if (pageW >= w - sbw - 1) return Object.assign(base, { l: 0, r: 100 }); // 铺满整个宽度
   const left = (w - sbw - pageW) / 2;
-  if (left <= 0.6) return { l: 0, r: 100 };
-  return { l: (left / w) * 100, r: ((left + pageW) / w) * 100 };
+  if (left <= 0.6) return Object.assign(base, { l: 0, r: 100 });
+  return Object.assign(base, {
+    l: (left / w) * 100,
+    r: ((left + pageW) / w) * 100
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -255,23 +303,6 @@ async function removeStyle(tabId) {
   }
 }
 
-/** 暂时摘掉边缘遮罩：量边界前必须先去掉，否则量到的是遮罩自己 */
-async function clearEdge(tabId) {
-  try {
-    await chrome.scripting.executeScript({
-      target: { tabId: tabId },
-      func: function (edgeId) {
-        var el = document.getElementById(edgeId);
-        if (el && el.parentNode) el.parentNode.removeChild(el);
-      },
-      args: [EDGE_ID]
-    });
-    return true;
-  } catch (err) {
-    return false;
-  }
-}
-
 /* ------------------------------------------------------------------ */
 /* 量页面边界（只在加载时 / 手动刷新时做）                                 */
 /* ------------------------------------------------------------------ */
@@ -332,7 +363,7 @@ async function measureGutters(tabId, windowId) {
     if (cur >= 0 && W - cur >= minRun) runs.push([cur, W - 1]);
     if (!runs.length) {
       // 连最左边都是深色 → 页面已经铺满整个宽度，压根没有空白要涂
-      return gutter < 90 ? { l: 0, r: 100 } : null;
+      return gutter < 90 ? { l: 0, r: 100, gutter: gutter } : null;
     }
 
     const left = runs[0][0];
@@ -353,7 +384,10 @@ async function measureGutters(tabId, windowId) {
     const rPct = ((right + 1) / W) * 100;
     if (lPct < 0.6 && rPct > 99.4) return null;
 
-    return { l: +lPct.toFixed(2), r: +rPct.toFixed(2) };
+    // gutter 是「已经反色过」的空白亮度：深色主题的原生空白是 #333，
+    // 反色后变成 ~#c0c0c0（亮）；浅色主题的原生空白是 #f1f1f1，反色后 ~#202020（暗）。
+    // 所以 gutter 亮 = 原生空白本来就是深灰 = 两侧不需要再涂。
+    return { l: +lPct.toFixed(2), r: +rPct.toFixed(2), gutter: gutter };
   } catch (err) {
     return null;
   }
@@ -386,12 +420,13 @@ async function refreshGeometry(tabId, url) {
   const info = await probe(tabId);
   if (!info || (!info.isPdf && !info.hasEmbed)) return false;
 
-  // 只有当前真的画着遮罩时才需要先摘掉；没画遮罩时抓图是「免费」的，不会闪
+  // 抓图前先回到「全宽遮罩、不涂、不裁」的测量态，否则量到的不是原生画面：
+  //   · 涂着深灰时，最左边几个像素是遮罩自己的颜色，基准色就错了
+  //   · 裁到页面时，两侧空白没被反色，判断不出浏览器是深色还是浅色主题
   const prev = await getGeomFor(tabId, url);
-  const hasScrim = prev && !(prev.l <= 0.5 && prev.r >= 99.5);
-  if (hasScrim) {
-    await clearEdge(tabId);
-    await sleep(110); // 让摘掉遮罩的那一帧真正上屏
+  if (prev) {
+    await injectStyle(tabId, buildCSS(settings, null));
+    await sleep(110); // 让这一帧真正上屏
   }
 
   let geom = null;
@@ -417,7 +452,17 @@ async function refreshGeometry(tabId, url) {
       }
     }
     const geoms = await getGeoms();
-    geoms[tabId] = { l: geom.l, r: geom.r, zoom: zoom, k: k, sbw: sbw, w: w, url: url };
+    geoms[tabId] = {
+      l: geom.l,
+      r: geom.r,
+      zoom: zoom,
+      k: k,
+      sbw: sbw,
+      w: w,
+      url: url,
+      // 原生空白本来就深 → 遮罩只盖页面，别去动两侧空白和 Edge 自己的浮层
+      clip: typeof geom.gutter === 'number' ? geom.gutter > 120 : false
+    };
     await setGeoms(geoms);
   }
 
@@ -446,6 +491,17 @@ async function applyToTab(tabId, url) {
     return;
   }
 
+  // 这个标签页被临时旁路（Alt+Shift+D）：什么都不注入，恢复成原始白纸
+  const peek = await getPeek();
+  if (peek[tabId]) {
+    await removeStyle(tabId);
+    if (applied[tabId]) {
+      delete applied[tabId];
+      await setApplied(applied);
+    }
+    return;
+  }
+
   const info = await probe(tabId);
   if (!info || (!info.isPdf && !info.hasEmbed)) return;
 
@@ -466,7 +522,7 @@ async function applyToTab(tabId, url) {
         });
         geom = projectGeom(stored, zoom, info.w);
       }
-      if (!geom) geom = { l: stored.l, r: stored.r };
+      if (!geom) geom = { l: stored.l, r: stored.r, w: info.w, sbw: stored.sbw, clip: stored.clip };
     }
   }
 
@@ -520,6 +576,23 @@ async function removeEverywhere() {
   );
   await setApplied({});
   await setGeoms({});
+  await setPeek({});
+}
+
+/**
+ * 临时旁路：这个标签页恢复原始白纸，直到再按一次。
+ * 存在的理由：Edge 的 Draw 面板 / 缩放菜单是 PDF 插件自己画的浮层，
+ * 扩展既看不到它的 DOM 也收不到鼠标事件，没法把它从反色里挖掉。
+ * 需要精确配色（比如挑荧光笔颜色）时，用这个把页面先还原。
+ */
+async function togglePeek(tabId, url) {
+  const peek = await getPeek();
+  if (peek[tabId]) delete peek[tabId];
+  else peek[tabId] = true;
+  await setPeek(peek);
+  await applyToTab(tabId, url);
+  if (!peek[tabId]) scheduleApply(tabId, 350); // 恢复深色时顺手补量一次
+  return !!peek[tabId];
 }
 
 /** 设置变更后重新应用到所有标签页 */
@@ -560,6 +633,13 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
       if (geoms[tabId]) {
         delete geoms[tabId];
         setGeoms(geoms);
+      }
+    });
+    // 换了文档也不再沿用「临时旁路」
+    getPeek().then(function (peek) {
+      if (peek[tabId]) {
+        delete peek[tabId];
+        setPeek(peek);
       }
     });
     applyToTab(tabId, url);
@@ -663,6 +743,21 @@ chrome.tabs.onRemoved.addListener(async function (tabId) {
     delete geoms[tabId];
     await setGeoms(geoms);
   }
+  const peek = await getPeek();
+  if (peek[tabId]) {
+    delete peek[tabId];
+    await setPeek(peek);
+  }
+});
+
+/* 快捷键：Alt+Shift+D 临时关掉当前页的反色 */
+chrome.commands.onCommand.addListener(async function (cmd) {
+  if (cmd !== 'toggle-peek') return;
+  const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  const tab = tabs && tabs[0];
+  if (!tab || typeof tab.id !== 'number') return;
+  if (!SCRIPTABLE.test(tab.url || '')) return;
+  await togglePeek(tab.id, tab.url || '');
 });
 
 chrome.storage.onChanged.addListener(async function (changes, area) {
@@ -686,6 +781,30 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
       scheduleApply(sender.tab.id, 200);
     }
     return undefined;
+  }
+
+  if (msg.type === 'peek-toggle') {
+    (async function () {
+      try {
+        const tabId = msg.tabId;
+        if (typeof tabId !== 'number') {
+          sendResponse({ ok: false, error: '没有可切换的标签页' });
+          return;
+        }
+        const tab = await chrome.tabs.get(tabId).catch(function () {
+          return null;
+        });
+        if (!tab) {
+          sendResponse({ ok: false, error: '标签页已关闭' });
+          return;
+        }
+        const on = await togglePeek(tabId, tab.url || '');
+        sendResponse({ ok: true, peek: on });
+      } catch (err) {
+        sendResponse({ ok: false, error: String(err) });
+      }
+    })();
+    return true;
   }
 
   if (msg.type !== 'reapply') return undefined;

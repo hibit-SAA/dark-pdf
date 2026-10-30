@@ -24,9 +24,9 @@ Same document ([`docs/demo.pdf`](docs/demo.pdf)), same window — the only thing
 | Extension off | Extension on |
 |:---:|:---:|
 | ![Off, 62%](docs/compare-off-zoom.png) | ![On, 62%](docs/screenshot-zoomout.png) |
-| The browser's own dark-grey desk, plus white paper | Paper goes dark, desk stays dark grey `#33373d` instead of flipping to light grey |
+| The browser's own dark-grey desk, plus white paper | Paper goes dark, desk stays the original dark grey instead of flipping to light grey |
 
-Inversion also flips the browser's dark-grey desk to light grey, so "painting the desk" is a separate step: measure the page rectangle, paint only the margins, and leave the body text untouched.
+Inversion also flips the browser's dark-grey desk to light grey, so the overlay **covers only the page itself** — the desk on either side belongs to the browser and is left untouched. Only in a light theme (where the desk really is light grey) are the margins painted `#33373d`.
 
 ---
 
@@ -42,7 +42,7 @@ The hard part is that the toolbar and the document canvas live on the **same lay
 
 - **Native toolbar untouched**: colours follow the browser theme, so it is already dark in a dark theme
 - **Zero contrast loss in body text**: only `invert + hue-rotate`, no curves — formulas, footnotes and thin strokes stay crisp
-- **Gutters painted dark grey** (`#33373d`): the page looks like it is floating on a dark desk, with a clear edge
+- **Browser chrome left alone**: the overlay covers the page only, so the scrollbar and toolbar flyouts stay where they are
 - **No flicker on zoom or resize**: new bounds are computed from a geometry model instead of re-capturing the screen
 - **Colours stay meaningful**: `hue-rotate(180deg)` restores the hues lost to inversion, so illustrations do not turn into negatives
 - **Zero network**: no remote resources, the capture is decoded inside the extension process, used once, never written to disk or sent anywhere
@@ -81,8 +81,9 @@ Click the extension icon:
 | --- | --- |
 | Dark inversion | Master switch; turning it off restores the original white instantly |
 | Inversion strength | 50%–100%, 100% being a full inversion; lowering it keeps photos less negative |
-| Auto-dim gutters | On by default. Measures the page bounds, then paints the margins dark grey |
+| Auto-dim gutters | On by default. Measures the page bounds, then decides whether the margins need painting at all (in a dark theme they do not) |
 | Re-apply to this page | Manual refresh and re-calibration (rarely needed) |
+| Show original page temporarily | Restores the current tab to white paper; shortcut `Alt+Shift+D`, press again to go back |
 
 ---
 
@@ -96,13 +97,25 @@ In the browser a PDF is a **plugin document** (`document.contentType === 'applic
 
 The toolbar and the document canvas live in the same `<embed>`. Putting a `filter` on the embed inverts the toolbar too (measured: `#3b3b3b` → `#b9b9b9`). So instead, a `pointer-events: none` overlay is placed **below the toolbar** (measured height 41px) and `backdrop-filter` inverts whatever is behind it — the toolbar sits above the overlay and is never affected.
 
-### 3. Why the gutters need separate treatment
+### 3. Why the gutters sometimes need painting and sometimes do not
 
-The area outside the page is painted by the viewer itself (in a dark theme, `#333`), on the same layer as the document. Inversion is a monotonic map: white paper `#fff` and that backdrop `#333` both come out light (`#141414` and `#c0c0c0`).
+The area outside the page is painted by the viewer itself, on the same layer as the document, so it gets inverted too. Inversion is a monotonic map: white paper `#fff` and the dark-theme backdrop `#333` both come out light (`#141414` and `#c0c0c0`).
 
 Crushing it with `brightness/contrast` was tried, and so was `mix-blend-mode: color-burn`. Both darken the gutters, and both **eat thin strokes** ("MATHEMATICS" broke apart). This is mathematically unsolvable: after inversion the text sits at 232 and the gutter at 192 — 40 apart. Any monotonic map that separates those two values has to crush the midtones, and every CSS filter and blend mode is monotonic.
 
-So the approach became **measure, then paint**: `chrome.tabs.captureVisibleTab` grabs one frame → scan the middle row → find the widest run whose luminance differs most from the gutter → convert to viewport percentages → paint a dark-grey gradient on the margins **above** the inversion overlay.
+So the only option is **measure, then decide**. `chrome.tabs.captureVisibleTab` grabs one frame → scan the middle row → find the widest run whose luminance differs most from the gutter (= the page). The same frame also records the gutter's brightness, which decides what happens next:
+
+| Browser theme | Native gutter | Measured after inversion | Handling |
+| --- | --- | --- | --- |
+| Dark | `#333` | light (≈192) | The gutter is already dark grey: **the overlay covers the page only**, nothing on either side is touched |
+| Light | `#f1f1f1` | dark (≈32) | It would flip to light: paint the margins `#33373d` |
+
+The point is that in a dark theme there is nothing to paint — and painting is exactly what puts an opaque block over the browser's own chrome, hiding the scrollbar and the Draw panel along with it. Once the overlay is clipped to the page, both stay put.
+
+### 3.1 Scrollbar and toolbar flyouts
+
+- **Scrollbar**: the overlay always stops short of the scrollbar column (measured 14px). Inversion turns the scrollbar light against a dark track, which makes it practically invisible — i.e. it hides it.
+- **Toolbar flyouts** (Draw panel, zoom menu, overflow menu): Edge draws these inside the PDF plugin. The extension can reach neither their DOM (`executeScript` only ever sees an `<embed>`) nor their mouse events (the plugin swallows them all). So the part of a flyout that **crosses the page's left edge** cannot be cut out of the inversion — whatever overlaps the page gets inverted with it. For accurate colour picking (choosing a highlighter, say), press `Alt+Shift+D` to restore the page to white paper, then press it again to come back.
 
 ### 4. Why zooming does not flicker
 
@@ -137,8 +150,10 @@ Zooming takes a fast path: it uses the `newZoomFactor` carried by the `onZoomCha
 ## Known limitations
 
 - The toolbar height is assumed to be 41px. If a future version makes it taller, a thin light strip may show along the top edge of the overlay
+- **When the Draw panel or a zoom menu crosses the page's left edge, the part over the page is inverted.** Those flyouts are drawn inside the PDF plugin, so the extension can neither see nor avoid them (see 3.1) — use `Alt+Shift+D` when you need accurate colours
 - When scrolling a multi-page document, **the horizontal gap between two pages** is still inverted light grey (~10px). It moves with the scroll, and a static overlay cannot follow it — it reads as a separator between pages
 - The geometry model assumes all pages in a document have the same width; PDFs with mixed page sizes drift slightly when turning pages
+- The theme is decided from the gutter brightness measured at load time; after switching the browser theme, reload the page to re-detect it
 - Encrypted (password-protected) PDFs still prompt for the password, and inversion works as usual
 
 ---
@@ -148,7 +163,7 @@ Zooming takes a fast path: it uses the `newZoomFactor` carried by the `onZoomCha
 ```
 .
 ├─ manifest.json     extension manifest (MV3)
-├─ background.js     injection: detect PDF page → inversion overlay → calibrate bounds → paint gutters
+├─ background.js     injection: detect PDF page → inversion overlay → calibrate bounds → clip to page
 ├─ popup.html/css/js settings panel
 ├─ icons/            16 / 32 / 48 / 128 icons
 └─ docs/             screenshots, plus the demo.pdf used to take them
@@ -162,6 +177,7 @@ Full notes live in [Releases](https://github.com/hibit-SAA/dark-pdf/releases) an
 
 | Version | Highlights | Package |
 | --- | --- | --- |
+| **v2.4** | Fix: scrollbar was covered by the overlay; Draw panel was clipped. Added `Alt+Shift+D` to restore the original page | Current source |
 | **v2.3.1** | Fix: after switching the extension off, zooming out and switching it back on, the gutters stayed inverted light grey | [Download](https://github.com/hibit-SAA/dark-pdf/releases/tag/v2.3.1) |
 | **v2.3** | Desk changed to dark grey `#33373d`; zoom switched to the geometry model, no more flicker | [Download](https://github.com/hibit-SAA/dark-pdf/releases/tag/v2.3) |
 | **v2.2** | Re-measure bounds after zoom / window resize; drop the overlay when the page fills the width | Not archived |

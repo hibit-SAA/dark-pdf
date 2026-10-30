@@ -8,12 +8,18 @@ const strengthEl = $('strength');
 const strengthVal = $('strengthVal');
 const edgeEl = $('autoEdge');
 const reapplyBtn = $('reapply');
+const peekBtn = $('peek');
 const statusEl = $('status');
 
 let currentTab = null;
 
 function setStatus(text) {
   statusEl.textContent = text || '';
+}
+
+function paintPeek(on) {
+  peekBtn.dataset.on = on ? '1' : '0';
+  peekBtn.textContent = on ? '恢复深色反色（Alt+Shift+D）' : '临时显示原始页面（Alt+Shift+D）';
 }
 
 function paintRange() {
@@ -37,8 +43,35 @@ async function init() {
 
   if (!currentTab || !/^(https?|file):/i.test(currentTab.url || '')) {
     reapplyBtn.disabled = true;
+    peekBtn.disabled = true;
     setStatus('当前页面不是 PDF');
+  } else {
+    const peek = (await chrome.storage.session.get('peekTabs')).peekTabs || {};
+    paintPeek(!!peek[currentTab.id]);
   }
+
+  // 快捷键改了状态也要跟着变
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'session' || !changes.peekTabs || !currentTab || !currentTab.id) return;
+    const map = changes.peekTabs.newValue || {};
+    paintPeek(!!map[currentTab.id]);
+  });
+
+  peekBtn.addEventListener('click', async () => {
+    if (!currentTab || !currentTab.id) return;
+    peekBtn.disabled = true;
+    const res = await chrome.runtime
+      .sendMessage({ type: 'peek-toggle', tabId: currentTab.id })
+      .catch((err) => ({ ok: false, error: String(err) }));
+    peekBtn.disabled = false;
+    if (res && res.ok) {
+      paintPeek(res.peek);
+      setStatus(res.peek ? '已临时还原为原始配色' : '已恢复深色反色');
+      setTimeout(() => setStatus(''), 1800);
+    } else {
+      setStatus((res && res.error) || '当前页面不是 PDF');
+    }
+  });
 
   enabledEl.addEventListener('change', async () => {
     await chrome.storage.sync.set({ enabled: enabledEl.checked });
