@@ -42,7 +42,7 @@ The hard part is that the toolbar and the document canvas live on the **same lay
 
 - **Native toolbar untouched**: colours follow the browser theme, so it is already dark in a dark theme
 - **Zero contrast loss in body text**: only `invert + hue-rotate`, no curves — formulas, footnotes and thin strokes stay crisp
-- **Browser chrome left alone**: the overlay covers the page only, so the scrollbar and toolbar flyouts stay where they are
+- **Browser chrome left alone**: the overlay covers the page only, so the scrollbar — and the part of a toolbar flyout that falls on the gutter — stay where they are
 - **No flicker on zoom or resize**: new bounds are computed from a geometry model instead of re-capturing the screen
 - **Colours stay meaningful**: `hue-rotate(180deg)` restores the hues lost to inversion, so illustrations do not turn into negatives
 - **Zero network**: no remote resources, the capture is decoded inside the extension process, used once, never written to disk or sent anywhere
@@ -110,7 +110,7 @@ So the only option is **measure, then decide**. `chrome.tabs.captureVisibleTab` 
 | Dark | `#333` | light (≈192) | The gutter is already dark grey: **the overlay covers the page only**, nothing on either side is touched |
 | Light | `#f1f1f1` | dark (≈32) | It would flip to light: paint the margins `#33373d` |
 
-The point is that in a dark theme there is nothing to paint — and painting is exactly what puts an opaque block over the browser's own chrome, hiding the scrollbar and the Draw panel along with it. Once the overlay is clipped to the page, both stay put.
+The point is that in a dark theme there is nothing to paint — and painting is exactly what puts an opaque block over the browser's own chrome, hiding the scrollbar and the Draw panel along with it. Once the overlay is clipped to the page, the scrollbar and the gutter side of any flyout stay put.
 
 ### 3.1 Scrollbar and toolbar flyouts
 
@@ -177,7 +177,7 @@ Full notes live in [Releases](https://github.com/hibit-SAA/dark-pdf/releases) an
 
 | Version | Highlights | Package |
 | --- | --- | --- |
-| **v2.4** | Fix: scrollbar was covered by the overlay; Draw panel was clipped. Added `Alt+Shift+D` to restore the original page | Current source |
+| **v2.4** | Fix: scrollbar was covered by the overlay; the Draw panel's gutter half was painted over. Added `Alt+Shift+D` to restore the original page | Current source |
 | **v2.3.1** | Fix: after switching the extension off, zooming out and switching it back on, the gutters stayed inverted light grey | [Download](https://github.com/hibit-SAA/dark-pdf/releases/tag/v2.3.1) |
 | **v2.3** | Desk changed to dark grey `#33373d`; zoom switched to the geometry model, no more flicker | [Download](https://github.com/hibit-SAA/dark-pdf/releases/tag/v2.3) |
 | **v2.2** | Re-measure bounds after zoom / window resize; drop the overlay when the page fills the width | Not archived |
